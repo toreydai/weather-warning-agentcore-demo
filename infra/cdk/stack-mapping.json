@@ -1,0 +1,139 @@
+{
+  "ClusterEB0386A7": {
+    "ResourceType": "AWS::ECS::Cluster",
+    "ResourceIdentifier": { "ClusterName": "weather-warning" }
+  },
+  "AlertTopic2720D535": {
+    "ResourceType": "AWS::SNS::Topic",
+    "ResourceIdentifier": {
+      "TopicArn": "arn:aws:sns:us-east-1:564535962140:weather-warning-cron-alerts"
+    }
+  },
+  "CronDlq4D2ADEAF": {
+    "ResourceType": "AWS::SQS::Queue",
+    "ResourceIdentifier": {
+      "QueueUrl": "https://sqs.us-east-1.amazonaws.com/564535962140/weather-warning-cron-dlq"
+    }
+  },
+  "DeployFailedRuleFFED4E73": {
+    "ResourceType": "AWS::Events::Rule",
+    "ResourceIdentifier": {
+      "Arn": "arn:aws:events:us-east-1:564535962140:rule/weather-warning-web-deployment-failed"
+    }
+  },
+  "TaskStoppedRule04248EA8": {
+    "ResourceType": "AWS::Events::Rule",
+    "ResourceIdentifier": {
+      "Arn": "arn:aws:events:us-east-1:564535962140:rule/weather-warning-web-task-stopped"
+    }
+  },
+  "ExecutionRole605A040B": {
+    "ResourceType": "AWS::IAM::Role",
+    "ResourceIdentifier": { "RoleName": "weather-warning-ecsTaskExecutionRole" }
+  },
+  "TaskRole30FC0FBB": {
+    "ResourceType": "AWS::IAM::Role",
+    "ResourceIdentifier": { "RoleName": "weather-warning-ecsTaskRole" }
+  },
+  "SchedulerRole59E73443": {
+    "ResourceType": "AWS::IAM::Role",
+    "ResourceIdentifier": { "RoleName": "weather-warning-scheduler-role" }
+  },
+  "WebLogGroup68B8CF3C": {
+    "ResourceType": "AWS::Logs::LogGroup",
+    "ResourceIdentifier": { "LogGroupName": "/weather-warning/web" }
+  },
+  "JobLogGroupC9C362EB": {
+    "ResourceType": "AWS::Logs::LogGroup",
+    "ResourceIdentifier": { "LogGroupName": "/weather-warning/job" }
+  },
+  "WebTargetGroup12079923": {
+    "ResourceType": "AWS::ElasticLoadBalancingV2::TargetGroup",
+    "ResourceIdentifier": {
+      "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:564535962140:targetgroup/weather-warning-web-tg/fac6479541815717"
+    }
+  },
+  "WebTaskDefDC37DBDB": {
+    "ResourceType": "AWS::ECS::TaskDefinition",
+    "ResourceIdentifier": {
+      "TaskDefinitionArn": "arn:aws:ecs:us-east-1:564535962140:task-definition/weather-warning-web:22"
+    }
+  },
+  "JobTaskDefCEA30423": {
+    "ResourceType": "AWS::ECS::TaskDefinition",
+    "ResourceIdentifier": {
+      "TaskDefinitionArn": "arn:aws:ecs:us-east-1:564535962140:task-definition/weather-warning-job:7"
+    }
+  },
+  "WebService7F8A1763": {
+    "ResourceType": "AWS::ECS::Service",
+    "ResourceIdentifier": {
+      "ServiceArn": "arn:aws:ecs:us-east-1:564535962140:service/weather-warning/weather-warning-web",
+      "Cluster": "weather-warning"
+    }
+  },
+  "ScheduleGroup": {
+    "ResourceType": "AWS::Scheduler::ScheduleGroup",
+    "ResourceIdentifier": { "Name": "weather-warning-cron" }
+  },
+  "Schedulefetchweather": {
+    "ResourceType": "AWS::Scheduler::Schedule",
+    "ResourceIdentifier": { "Name": "fetch-weather" }
+  },
+  "Schedulecheckalerts": {
+    "ResourceType": "AWS::Scheduler::Schedule",
+    "ResourceIdentifier": { "Name": "check-alerts" }
+  },
+  "Schedulegenerateadvice": {
+    "ResourceType": "AWS::Scheduler::Schedule",
+    "ResourceIdentifier": { "Name": "generate-advice" }
+  },
+  "Schedulegeneratedailyalert": {
+    "ResourceType": "AWS::Scheduler::Schedule",
+    "ResourceIdentifier": { "Name": "generate-daily-alert" }
+  },
+  "Schedulepushdailyalert": {
+    "ResourceType": "AWS::Scheduler::Schedule",
+    "ResourceIdentifier": { "Name": "push-daily-alert" }
+  },
+  "Schedulearchivealerts": {
+    "ResourceType": "AWS::Scheduler::Schedule",
+    "ResourceIdentifier": { "Name": "archive-alerts" }
+  },
+  "Schedulearchivedailyalertsmonthly": {
+    "ResourceType": "AWS::Scheduler::Schedule",
+    "ResourceIdentifier": { "Name": "archive-daily-alerts-monthly" }
+  },
+  "Alb5xxA941AA09": {
+    "ResourceType": "AWS::CloudWatch::Alarm",
+    "ResourceIdentifier": { "AlarmName": "weather-warning-alb-5xx" }
+  },
+  "CpuHigh997196C2": {
+    "ResourceType": "AWS::CloudWatch::Alarm",
+    "ResourceIdentifier": { "AlarmName": "weather-warning-web-cpu-high" }
+  },
+  "MemHigh1372601D": {
+    "ResourceType": "AWS::CloudWatch::Alarm",
+    "ResourceIdentifier": { "AlarmName": "weather-warning-web-memory-high" }
+  },
+  "ResponseSlow7CBBF553": {
+    "ResourceType": "AWS::CloudWatch::Alarm",
+    "ResourceIdentifier": { "AlarmName": "weather-warning-web-response-slow" }
+  },
+  "Target5xx472ED778": {
+    "ResourceType": "AWS::CloudWatch::Alarm",
+    "ResourceIdentifier": { "AlarmName": "weather-warning-web-target-5xx" }
+  },
+  "TargetUnhealthy35826D9B": {
+    "ResourceType": "AWS::CloudWatch::Alarm",
+    "ResourceIdentifier": { "AlarmName": "weather-warning-target-unhealthy" }
+  },
+  "DlqVisible91FFDF97": {
+    "ResourceType": "AWS::CloudWatch::Alarm",
+    "ResourceIdentifier": { "AlarmName": "weather-warning-cron-dlq-visible" }
+  },
+  "FetchError2626B163": {
+    "ResourceType": "AWS::CloudWatch::Alarm",
+    "ResourceIdentifier": { "AlarmName": "weather-warning-fetch-error" }
+  }
+}

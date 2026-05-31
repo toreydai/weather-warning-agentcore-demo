@@ -1,0 +1,194 @@
+{
+  "Vpc": {
+    "ResourceType": "AWS::EC2::VPC",
+    "ResourceIdentifier": { "VpcId": "vpc-eaab3390" }
+  },
+  "PrivateSubnet1": {
+    "ResourceType": "AWS::EC2::Subnet",
+    "ResourceIdentifier": { "SubnetId": "subnet-0b2d6a7e941540c9e" }
+  },
+  "PrivateSubnet2": {
+    "ResourceType": "AWS::EC2::Subnet",
+    "ResourceIdentifier": { "SubnetId": "subnet-0508e05881b38c314" }
+  },
+  "AlbSubnet1": {
+    "ResourceType": "AWS::EC2::Subnet",
+    "ResourceIdentifier": { "SubnetId": "subnet-e9d79cc7" }
+  },
+  "AlbSubnet2": {
+    "ResourceType": "AWS::EC2::Subnet",
+    "ResourceIdentifier": { "SubnetId": "subnet-5b839f11" }
+  },
+  "PrivateRouteTable": {
+    "ResourceType": "AWS::EC2::RouteTable",
+    "ResourceIdentifier": { "RouteTableId": "rtb-0c78c1f40d7f36ea5" }
+  },
+  "NatEip": {
+    "ResourceType": "AWS::EC2::EIP",
+    "ResourceIdentifier": { "AllocationId": "eipalloc-0960a0abfee400b84" }
+  },
+  "NatGateway": {
+    "ResourceType": "AWS::EC2::NatGateway",
+    "ResourceIdentifier": { "NatGatewayId": "nat-0c83b05a3b2dc1861" }
+  },
+  "PrivateDefaultRoute": {
+    "ResourceType": "AWS::EC2::Route",
+    "ResourceIdentifier": {
+      "RouteTableId": "rtb-0c78c1f40d7f36ea5",
+      "DestinationCidrBlock": "0.0.0.0/0"
+    }
+  },
+  "PrivateSubnetRouteAssociation1": {
+    "ResourceType": "AWS::EC2::SubnetRouteTableAssociation",
+    "ResourceIdentifier": { "Id": "rtbassoc-038f0d9f47b2c7e3a" }
+  },
+  "PrivateSubnetRouteAssociation2": {
+    "ResourceType": "AWS::EC2::SubnetRouteTableAssociation",
+    "ResourceIdentifier": { "Id": "rtbassoc-0f5e94b995b17c1e5" }
+  },
+  "AlbSecurityGroup": {
+    "ResourceType": "AWS::EC2::SecurityGroup",
+    "ResourceIdentifier": { "GroupId": "sg-0d5c5be4755ce93ff" }
+  },
+  "FargateSecurityGroup": {
+    "ResourceType": "AWS::EC2::SecurityGroup",
+    "ResourceIdentifier": { "GroupId": "sg-040b4aedfef5411d0" }
+  },
+  "RdsSecurityGroup": {
+    "ResourceType": "AWS::EC2::SecurityGroup",
+    "ResourceIdentifier": { "GroupId": "sg-0b43c3a5d0bcaf4da" }
+  },
+  "BuilderSecurityGroup": {
+    "ResourceType": "AWS::EC2::SecurityGroup",
+    "ResourceIdentifier": { "GroupId": "sg-0b2c53fd8dea10398" }
+  },
+  "ApplicationLoadBalancer": {
+    "ResourceType": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+    "ResourceIdentifier": {
+      "LoadBalancerArn": "arn:aws:elasticloadbalancing:us-east-1:564535962140:loadbalancer/app/weather-warning-agentcore-alb/5682860b231bc07f"
+    }
+  },
+  "HttpListener": {
+    "ResourceType": "AWS::ElasticLoadBalancingV2::Listener",
+    "ResourceIdentifier": {
+      "ListenerArn": "arn:aws:elasticloadbalancing:us-east-1:564535962140:listener/app/weather-warning-agentcore-alb/5682860b231bc07f/42f9e80eb0859b8e"
+    }
+  },
+  "FargateCanaryRule": {
+    "ResourceType": "AWS::ElasticLoadBalancingV2::ListenerRule",
+    "ResourceIdentifier": {
+      "RuleArn": "arn:aws:elasticloadbalancing:us-east-1:564535962140:listener-rule/app/weather-warning-agentcore-alb/5682860b231bc07f/42f9e80eb0859b8e/a682a33c2bb6baed"
+    }
+  },
+  "EcrWebRepository": {
+    "ResourceType": "AWS::ECR::Repository",
+    "ResourceIdentifier": { "RepositoryName": "weather-warning-agentcore" }
+  },
+  "EcrJobRepository": {
+    "ResourceType": "AWS::ECR::Repository",
+    "ResourceIdentifier": { "RepositoryName": "weather-warning-agentcore-job" }
+  },
+  "AppSecret": {
+    "ResourceType": "AWS::SecretsManager::Secret",
+    "ResourceIdentifier": {
+      "Id": "arn:aws:secretsmanager:us-east-1:564535962140:secret:weather-warning/agentcore/app-F9Saz3"
+    }
+  },
+  "DbSubnetGroup": {
+    "ResourceType": "AWS::RDS::DBSubnetGroup",
+    "ResourceIdentifier": { "DBSubnetGroupName": "default" }
+  },
+  "Database": {
+    "ResourceType": "AWS::RDS::DBInstance",
+    "ResourceIdentifier": { "DBInstanceIdentifier": "weather-warning-agentcore-db" }
+  },
+  "KnowledgeBaseBucket": {
+    "ResourceType": "AWS::S3::Bucket",
+    "ResourceIdentifier": { "BucketName": "weather-warning-backups-564535962140" }
+  },
+  "AgentCoreCodeBucket": {
+    "ResourceType": "AWS::S3::Bucket",
+    "ResourceIdentifier": {
+      "BucketName": "bedrock-agentcore-codebuild-sources-564535962140-us-east-1"
+    }
+  },
+  "KnowledgeBaseRole": {
+    "ResourceType": "AWS::IAM::Role",
+    "ResourceIdentifier": { "RoleName": "weather-warning-kb-role" }
+  },
+  "AgentCoreRuntimeRole": {
+    "ResourceType": "AWS::IAM::Role",
+    "ResourceIdentifier": { "RoleName": "weather-warning-agentcore-runtime-role" }
+  },
+  "KnowledgeBaseEncryptionPolicy": {
+    "ResourceType": "AWS::OpenSearchServerless::SecurityPolicy",
+    "ResourceIdentifier": { "Name": "weather-warning-kb-enc", "Type": "encryption" }
+  },
+  "KnowledgeBaseNetworkPolicy": {
+    "ResourceType": "AWS::OpenSearchServerless::SecurityPolicy",
+    "ResourceIdentifier": { "Name": "weather-warning-kb-net", "Type": "network" }
+  },
+  "KnowledgeBaseAccessPolicy": {
+    "ResourceType": "AWS::OpenSearchServerless::AccessPolicy",
+    "ResourceIdentifier": { "Name": "weather-warning-kb-access", "Type": "data" }
+  },
+  "KnowledgeBaseCollection": {
+    "ResourceType": "AWS::OpenSearchServerless::Collection",
+    "ResourceIdentifier": { "Id": "0sncarqgb26oqxuw1fcg" }
+  },
+  "KnowledgeBase": {
+    "ResourceType": "AWS::Bedrock::KnowledgeBase",
+    "ResourceIdentifier": { "KnowledgeBaseId": "R8OK5B4VRA" }
+  },
+  "KnowledgeBaseDataSource": {
+    "ResourceType": "AWS::Bedrock::DataSource",
+    "ResourceIdentifier": {
+      "KnowledgeBaseId": "R8OK5B4VRA",
+      "DataSourceId": "SG4J4FPRDZ"
+    }
+  },
+  "WeatherAnalystMemory": {
+    "ResourceType": "AWS::BedrockAgentCore::Memory",
+    "ResourceIdentifier": {
+      "MemoryArn": "arn:aws:bedrock-agentcore:us-east-1:564535962140:memory/weather-warning_weather_analyst_mem-DEt6lvGNUj"
+    }
+  },
+  "FarmingAdvisorFastMemory": {
+    "ResourceType": "AWS::BedrockAgentCore::Memory",
+    "ResourceIdentifier": {
+      "MemoryArn": "arn:aws:bedrock-agentcore:us-east-1:564535962140:memory/weather-warning_farming_advisor_fast_mem-qDTCgnCLrg"
+    }
+  },
+  "FarmingAdvisorDeepMemory": {
+    "ResourceType": "AWS::BedrockAgentCore::Memory",
+    "ResourceIdentifier": {
+      "MemoryArn": "arn:aws:bedrock-agentcore:us-east-1:564535962140:memory/weather-warning_farming_advisor_deep_mem-WfCBVC4kb3"
+    }
+  },
+  "AlertAnalystMemory": {
+    "ResourceType": "AWS::BedrockAgentCore::Memory",
+    "ResourceIdentifier": {
+      "MemoryArn": "arn:aws:bedrock-agentcore:us-east-1:564535962140:memory/weather-warning_alert_analyst_mem-aMruEFEL12"
+    }
+  },
+  "WeatherAnalystRuntime": {
+    "ResourceType": "AWS::BedrockAgentCore::Runtime",
+    "ResourceIdentifier": { "AgentRuntimeId": "weather-warning_weather_analyst-64EaP5AM3E" }
+  },
+  "FarmingAdvisorFastRuntime": {
+    "ResourceType": "AWS::BedrockAgentCore::Runtime",
+    "ResourceIdentifier": { "AgentRuntimeId": "weather-warning_farming_advisor_fast-GGl7H4Fl5j" }
+  },
+  "FarmingAdvisorDeepRuntime": {
+    "ResourceType": "AWS::BedrockAgentCore::Runtime",
+    "ResourceIdentifier": { "AgentRuntimeId": "weather-warning_farming_advisor_deep-JFhvKFCbIP" }
+  },
+  "AlertAnalystRuntime": {
+    "ResourceType": "AWS::BedrockAgentCore::Runtime",
+    "ResourceIdentifier": { "AgentRuntimeId": "weather-warning_alert_analyst-ZLR9Ao3KlT" }
+  },
+  "ArmBuilder": {
+    "ResourceType": "AWS::EC2::Instance",
+    "ResourceIdentifier": { "InstanceId": "i-03e513e93ea4f615d" }
+  }
+}

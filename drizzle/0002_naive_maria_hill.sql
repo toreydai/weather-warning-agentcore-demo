@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS "daily_farming_alert" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"county_code" text NOT NULL,
+	"county_name" text NOT NULL,
+	"date" text NOT NULL,
+	"stage" text,
+	"focus" text,
+	"signals_json" text,
+	"draft_content" text NOT NULL,
+	"draft_model" text,
+	"draft_prompt_hash" text,
+	"final_content" text,
+	"status" text DEFAULT 'draft' NOT NULL,
+	"reviewed_by" text,
+	"reviewed_at" timestamp,
+	"published_at" timestamp,
+	"archived_month" text,
+	"created_at" timestamp DEFAULT now(),
+	"updated_at" timestamp DEFAULT now(),
+	CONSTRAINT "daily_farming_alert_county_code_date_unique" UNIQUE("county_code","date")
+);

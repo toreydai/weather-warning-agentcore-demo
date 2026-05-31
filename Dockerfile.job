@@ -1,0 +1,18 @@
+FROM node:22-alpine AS base
+WORKDIR /app
+
+FROM base AS deps
+COPY package.json package-lock.json ./
+RUN npm ci
+
+FROM base AS runner
+ENV NODE_ENV=production
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json package-lock.json tsconfig.json ./
+COPY src ./src
+COPY scripts ./scripts
+COPY drizzle ./drizzle
+RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 jobs
+USER jobs
+ENTRYPOINT ["npx", "tsx"]
+CMD ["scripts/fetch-weather.ts"]

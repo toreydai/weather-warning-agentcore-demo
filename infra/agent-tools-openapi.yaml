@@ -1,0 +1,263 @@
+openapi: 3.0.0
+info:
+  title: Weather Warning Agent Tools
+  version: 1.0.0
+  description: Tools for weather-warning agricultural management agents
+paths:
+  /query-field:
+    post:
+      operationId: queryField
+      summary: 查询地块信息
+      description: 查询指定地块的名称、经纬度、品种、播种日期、面积等信息
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                field_id:
+                  type: integer
+                  description: 地块ID
+              required: [field_id]
+      responses:
+        '200':
+          description: 地块信息
+          content:
+            application/json:
+              schema:
+                type: object
+  /query-weather:
+    post:
+      operationId: queryWeather
+      summary: 查询历史气象数据
+      description: 查询指定地块的历史日度气象数据，包括温度、降水、风速、湿度
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                field_id:
+                  type: integer
+                  description: 地块ID
+                start_date:
+                  type: string
+                  description: 起始日期 YYYY-MM-DD
+                end_date:
+                  type: string
+                  description: 结束日期 YYYY-MM-DD
+              required: [field_id]
+      responses:
+        '200':
+          description: 日度气象数据数组
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+  /query-forecast:
+    post:
+      operationId: queryForecast
+      summary: 查询天气预报
+      description: 查询指定地块未来7天的天气预报数据
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                field_id:
+                  type: integer
+                  description: 地块ID
+              required: [field_id]
+      responses:
+        '200':
+          description: 7天预报数据
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+  /query-alerts:
+    post:
+      operationId: queryAlerts
+      summary: 查询预警记录
+      description: 查询指定地块的现有预警记录，包括霜冻、暴雨、大风、高温等
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                field_id:
+                  type: integer
+                  description: 地块ID
+              required: [field_id]
+      responses:
+        '200':
+          description: 预警记录数组
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+  /query-thresholds:
+    post:
+      operationId: queryThresholds
+      summary: 查询预警阈值
+      description: 查询数据库中配置的预警阈值，包括霜冻、暴雨、大风、高温的黄橙红三级阈值
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+      responses:
+        '200':
+          description: 阈值配置数组
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+  /query-advice-history:
+    post:
+      operationId: queryAdviceHistory
+      summary: 查询历史农事建议
+      description: 查询指定地块最近N周的历史农事建议记录
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                field_id:
+                  type: integer
+                  description: 地块ID
+                weeks:
+                  type: integer
+                  description: 查询最近N周的建议，默认4
+              required: [field_id]
+      responses:
+        '200':
+          description: 历史建议数组
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+  /query-historical-monthly:
+    post:
+      operationId: queryHistoricalMonthly
+      summary: 查询历史月度均值
+      description: 查询指定地区的历史月度气象均值，用于同期对比分析
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                region:
+                  type: string
+                  description: 地区标识，默认xilinhaote
+      responses:
+        '200':
+          description: 月度均值数组
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+  /save-advice:
+    post:
+      operationId: saveAdvice
+      summary: 保存农事建议
+      description: 将生成的农事建议保存到数据库，不会覆盖人工编辑的版本
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                field_id:
+                  type: integer
+                  description: 地块ID
+                week_start:
+                  type: string
+                  description: 周起始日期
+                week_end:
+                  type: string
+                  description: 周结束日期
+                growth_stage:
+                  type: string
+                  description: 生长阶段
+                summary:
+                  type: string
+                  description: 总结
+                fertilizer:
+                  type: string
+                  description: 施肥建议
+                pesticide:
+                  type: string
+                  description: 病虫害防治建议
+                irrigation:
+                  type: string
+                  description: 灌溉建议
+                field_work:
+                  type: string
+                  description: 田间管理建议
+              required: [field_id, week_start]
+      responses:
+        '200':
+          description: 保存结果
+          content:
+            application/json:
+              schema:
+                type: object
+  /send-notification:
+    post:
+      operationId: sendNotification
+      summary: 发送预警通知
+      description: 通过SNS发送红色或橙色预警通知给相关人员
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                severity:
+                  type: string
+                  enum: [red, orange]
+                  description: 预警级别
+                title:
+                  type: string
+                  description: 预警标题
+                description:
+                  type: string
+                  description: 预警描述
+                field_name:
+                  type: string
+                  description: 地块名称
+              required: [severity, title, description, field_name]
+      responses:
+        '200':
+          description: 通知结果
+          content:
+            application/json:
+              schema:
+                type: object

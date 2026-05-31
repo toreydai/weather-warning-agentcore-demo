@@ -1,0 +1,1 @@
+ALTER TABLE "daily_farming_alert" ADD COLUMN "needs_review" boolean DEFAULT false NOT NULL;

@@ -1,0 +1,465 @@
+openapi: 3.1.0
+info:
+  title: Weather Warning Public API
+  version: v1
+  description: |
+    农业气象预警平台对外开放接口。
+
+    ## 认证
+
+    使用 OAuth 2.0 Client Credentials 流程获取 Bearer Token，有效期 1 小时。
+
+    ```bash
+    # 获取 token
+    curl -X POST https://{host}/api/v1/oauth/token \
+      -H "Content-Type: application/json" \
+      -d '{"grant_type":"client_credentials","client_id":"YOUR_ID","client_secret":"YOUR_SECRET"}'
+    ```
+
+    响应：
+    ```json
+    {"access_token":"...","token_type":"Bearer","expires_in":3600}
+    ```
+
+    ## 限流
+
+    默认 60 次/分钟，超限返回 `429 Too Many Requests`，`Retry-After` 头指示重试时间（秒）。
+
+    ## 响应格式
+
+    所有端点统一返回：
+    ```json
+    {
+      "ok": true,
+      "data": { ... },
+      "meta": { "request_id": "uuid", "as_of": "2026-05-15T07:00:00.000Z" }
+    }
+    ```
+    错误时：
+    ```json
+    {
+      "ok": false,
+      "errors": [{ "code": "invalid_param", "message": "..." }],
+      "meta": { "request_id": "uuid", "as_of": "..." }
+    }
+    ```
+
+servers:
+  - url: http://weather-warning-agentcore-alb-54329175.us-east-1.elb.amazonaws.com
+    description: 生产环境
+
+security:
+  - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    Meta:
+      type: object
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        as_of:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          example: invalid_param
+        message:
+          type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: false
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    ForecastDay:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          example: "2026-05-15"
+        temp_max:
+          type: number
+          nullable: true
+          description: 最高气温（°C）
+        temp_min:
+          type: number
+          nullable: true
+          description: 最低气温（°C）
+        precipitation:
+          type: number
+          nullable: true
+          description: 降水量（mm）
+        wind_speed_max:
+          type: number
+          nullable: true
+          description: 最大风速（km/h）
+        humidity:
+          type: number
+          nullable: true
+          description: 相对湿度（%）
+        weather_code:
+          type: integer
+          nullable: true
+          description: WMO 天气代码
+
+    Alert:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+          format: date
+        type:
+          type: string
+          example: heavy_rain
+        severity:
+          type: string
+          enum: [yellow, orange, red]
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        stage:
+          type: string
+          nullable: true
+          description: 生育期
+
+paths:
+  /api/v1/oauth/token:
+    post:
+      summary: 获取访问令牌
+      security: []
+      tags: [认证]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [grant_type, client_id, client_secret]
+              properties:
+                grant_type:
+                  type: string
+                  enum: [client_credentials]
+                client_id:
+                  type: string
+                client_secret:
+                  type: string
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [grant_type, client_id, client_secret]
+              properties:
+                grant_type:
+                  type: string
+                client_id:
+                  type: string
+                client_secret:
+                  type: string
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  token_type:
+                    type: string
+                    example: Bearer
+                  expires_in:
+                    type: integer
+                    example: 3600
+        '401':
+          description: 凭证无效
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: invalid_client
+
+  /api/v1/oauth/revoke:
+    post:
+      summary: 撤销令牌
+      security: []
+      tags: [认证]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token:
+                  type: string
+      responses:
+        '200':
+          description: 成功（token 不存在时也返回 200，符合 RFC 7009）
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+
+  /api/v1/public/weather/forecast:
+    get:
+      summary: 获取地块天气预报
+      tags: [天气]
+      parameters:
+        - name: field_id
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: 地块 ID
+        - name: days
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 45
+            default: 7
+          description: 预报天数（最多 45 天）
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      field_id:
+                        type: integer
+                      days:
+                        type: integer
+                      forecast:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ForecastDay'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        '400':
+          description: 参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/v1/public/alerts/active:
+    get:
+      summary: 获取地块当日有效预警
+      tags: [预警]
+      parameters:
+        - name: field_id
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: 地块 ID
+      responses:
+        '200':
+          description: 成功（无预警时 alerts 为空数组）
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      field_id:
+                        type: integer
+                      date:
+                        type: string
+                        format: date
+                      alerts:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Alert'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/v1/public/advice/daily:
+    get:
+      summary: 获取县级每日农事预警
+      tags: [农事建议]
+      parameters:
+        - name: county_code
+          in: query
+          required: true
+          schema:
+            type: string
+          description: 县级行政区划码（如 420923）
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+          description: 日期（YYYY-MM-DD），默认为今日（北京时间）
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      county_code:
+                        type: string
+                      county_name:
+                        type: string
+                      date:
+                        type: string
+                        format: date
+                      stage:
+                        type: string
+                        nullable: true
+                        description: 生育期
+                      focus:
+                        type: string
+                        nullable: true
+                      content:
+                        type: string
+                        description: 农事建议正文（优先返回人工审核版）
+                      published_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: 无已发布的农事预警
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  responses:
+    Unauthorized:
+      description: 未认证
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: 无权访问该资源
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: 参数错误
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+# ─── 示例代码 ────────────────────────────────────────────────────────────────
+# curl 示例
+#
+#   # 1. 获取 token
+#   TOKEN=$(curl -s -X POST https://{host}/api/v1/oauth/token \
+#     -H "Content-Type: application/json" \
+#     -d '{"grant_type":"client_credentials","client_id":"YOUR_ID","client_secret":"YOUR_SECRET"}' \
+#     | jq -r .access_token)
+#
+#   # 2. 天气预报
+#   curl "https://{host}/api/v1/public/weather/forecast?field_id=33&days=7" \
+#     -H "Authorization: Bearer $TOKEN"
+#
+#   # 3. 当日预警
+#   curl "https://{host}/api/v1/public/alerts/active?field_id=33" \
+#     -H "Authorization: Bearer $TOKEN"
+#
+#   # 4. 农事建议
+#   curl "https://{host}/api/v1/public/advice/daily?county_code=420923&date=2026-05-15" \
+#     -H "Authorization: Bearer $TOKEN"
+#
+# ─── Python 示例 ─────────────────────────────────────────────────────────────
+#
+#   import requests
+#
+#   BASE = "https://{host}"
+#   CLIENT_ID = "YOUR_ID"
+#   CLIENT_SECRET = "YOUR_SECRET"
+#
+#   # 获取 token
+#   r = requests.post(f"{BASE}/api/v1/oauth/token", json={
+#       "grant_type": "client_credentials",
+#       "client_id": CLIENT_ID,
+#       "client_secret": CLIENT_SECRET,
+#   })
+#   token = r.json()["access_token"]
+#   headers = {"Authorization": f"Bearer {token}"}
+#
+#   # 天气预报
+#   forecast = requests.get(f"{BASE}/api/v1/public/weather/forecast",
+#       params={"field_id": 33, "days": 7}, headers=headers).json()
+#
+#   # 当日预警
+#   alerts = requests.get(f"{BASE}/api/v1/public/alerts/active",
+#       params={"field_id": 33}, headers=headers).json()
+#
+#   # 农事建议
+#   advice = requests.get(f"{BASE}/api/v1/public/advice/daily",
+#       params={"county_code": "420923", "date": "2026-05-15"}, headers=headers).json()

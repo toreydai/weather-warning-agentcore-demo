@@ -1,0 +1,1 @@
+ALTER TABLE "field" DROP COLUMN "harvest_started_at";

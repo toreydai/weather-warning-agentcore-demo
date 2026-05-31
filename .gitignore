@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+.next/
+out/
+dist/
+
+# Environment variables (never commit)
+.env*.local
+.env.local*
+
+# Database
+data/
+*.db
+
+# CDK generated files (contain account-specific infra details)
+infra/cdk/cdk.*.json
+infra/cdk/cdk.context.json
+infra/cdk/cdk.out*/
+infra/cdk/dist/
+infra/cdk/node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python virtual environments
+poc/.venv/
+**/.venv/
+__pycache__/
+*.pyc
+
+# AgentCore CLI build cache
+**/.bedrock_agentcore/
+tsconfig.tsbuildinfo
+next-env.d.ts
+package-lock.json
