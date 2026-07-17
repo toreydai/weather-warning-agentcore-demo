@@ -65,7 +65,7 @@ http://weather-warning-agentcore-alb-54329175.us-east-1.elb.amazonaws.com
 
 > **注意**：部署时不要手动 `stop-task`，让 ECS 滚动更新自己处理，避免短暂 5xx 触发告警邮件。
 
-> **镜像构建机制**：`infra/build-image.sh` 支持 `BUILD_MODE=auto|local|remote`（默认 `auto`）。当前 ECS 为 X86_64，在 Cloud9/x86 主机上默认直接本地构建，不启动 ARM builder。详见 `docs/deployment-guide.md` 的「镜像构建模式」小节。
+> **镜像构建机制**：`infra/build-image.sh` 支持 `BUILD_MODE=auto|local|remote`（默认 `auto`）。当前 ECS 为 X86_64，在 Cloud9/x86 主机上默认直接本地构建，不启动 ARM builder。详见 `docs/deployment.md` 的「镜像构建模式」小节。
 
 schema 变更时：
 

@@ -10,7 +10,7 @@
 - **部署**：AWS ECS Fargate + ALB + CDK
 - **地图**：天地图（Tianditu）+ Leaflet
 
-## 架构概览
+## 架构
 
 系统包含 4 个 AgentCore Runtime Agent：
 - `weather-analyst`：气象数据分析
@@ -46,12 +46,13 @@ npm run dev
 
 ### 部署到 AWS
 
-详见 [docs/deployment-guide.md](docs/deployment-guide.md)。
+详见 [docs/deployment.md](docs/deployment.md)。
 
 ## 文档
 
+- [架构文档](docs/architecture.md)
 - [系统设计](docs/design.md)
-- [部署指南](docs/deployment-guide.md)
+- [部署指南](docs/deployment.md)
 - [用户手册](docs/user-manual.md)
 - [管理员手册](docs/admin-manual.md)
 - [公开 API](docs/public-api-guide.md)
@@ -62,7 +63,7 @@ npm run dev
 
 ## License
 
-MIT
+MIT - see the [LICENSE](LICENSE) file for details.
 
 ## 免责声明
 
