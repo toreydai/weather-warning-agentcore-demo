@@ -16,5 +16,9 @@
   "devDependencies": {
     "aws-cdk": "^2.180.0",
     "typescript": "^5.4.0"
+  },
+  "overrides": {
+    "fast-uri": "^3.1.2",
+    "brace-expansion": "^5.0.6"
   }
 }
