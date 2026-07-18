@@ -178,10 +178,6 @@ export class WeatherWarningFoundationStack extends cdk.Stack {
       sourceSecurityGroupId: FARGATE_SG_ID,
       description: "Postgres from Fargate tasks",
     }))
-    retain(new ec2.CfnSecurityGroupIngress(this, "RdsIngressPublicPostgres", {
-      groupId: RDS_SG_ID,
-      ipProtocol: "tcp", fromPort: 5432, toPort: 5432, cidrIp: "0.0.0.0/0",
-    }))
     retain(new ec2.CfnSecurityGroupEgress(this, "RdsEgressAll", {
       groupId: RDS_SG_ID,
       ipProtocol: "-1", cidrIp: "0.0.0.0/0",
