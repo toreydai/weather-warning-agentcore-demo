@@ -41,4 +41,3 @@ __pycache__/
 **/.bedrock_agentcore/
 tsconfig.tsbuildinfo
 next-env.d.ts
-package-lock.json
