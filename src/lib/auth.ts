@@ -68,13 +68,13 @@ export async function revokeRefreshToken(raw: string): Promise<void> {
 }
 
 export function setAuthCookies(res: NextResponse, accessToken: string, refreshTokenValue: string) {
-  const secure = env.COOKIE_SECURE
+  const secure = process.env.NODE_ENV === "production" || env.COOKIE_SECURE
   setAccessCookie(res, accessToken)
   res.cookies.set(REFRESH_COOKIE, refreshTokenValue, { httpOnly: true, maxAge: REFRESH_TTL_MS / 1000, path: "/api/auth", sameSite: "lax", secure })
 }
 
 export function setAccessCookie(res: NextResponse, accessToken: string) {
-  const secure = env.COOKIE_SECURE
+  const secure = process.env.NODE_ENV === "production" || env.COOKIE_SECURE
   res.cookies.set(ACCESS_COOKIE, accessToken, { httpOnly: true, maxAge: ACCESS_MAXAGE_S, path: "/", sameSite: "lax", secure })
 }
 

@@ -10,6 +10,7 @@
 - AWS 账号，且有足够权限（ECS、RDS、Bedrock、S3、IAM、CloudFormation、EventBridge、CloudWatch）
 - 本地安装：Node.js 18+、AWS CLI v2、CDK CLI（`npm install -g aws-cdk`）
 - AWS CLI 已配置好凭证：`aws configure`
+- 已签发的 ACM 证书（`us-east-1`）和由该证书覆盖的公网域名；将域名 DNS 记录指向应用 ALB
 - 气象数据使用 Open-Meteo（免费，无需 API Key）
 
 ---
@@ -24,7 +25,7 @@ npm install
 ```
 
 脚本会依次执行：
-1. 交互式收集配置（DB 地址、密钥、API Key 等）
+1. 交互式收集配置（DB 地址、密钥、ACM 证书 ARN、公网域名等）
 2. CDK 部署基础设施（VPC、RDS、ECS、ALB、Bedrock KB 等，约 15-30 分钟）
 3. 写入 Secrets Manager
 4. 初始化数据库（建表 + 种子数据）
@@ -78,7 +79,9 @@ RUN_MIGRATIONS=1 ./infra/sv.sh deploy web
 
 ```bash
 ./infra/sv.sh cdk diff     # 先预览
-./infra/sv.sh cdk deploy   # 再执行
+./infra/sv.sh cdk deploy \
+  --parameters WeatherWarningFoundationStack:TlsCertificateArn=YOUR_CERTIFICATE_ARN \
+  --parameters WeatherWarningFoundationStack:PublicHostname=weather.example.com
 ```
 
 ### 切换 ECS 架构（X86_64 ↔ ARM64）
@@ -86,7 +89,7 @@ RUN_MIGRATIONS=1 ./infra/sv.sh deploy web
 当前为 X86_64（构建快，约 45 秒）。正式上线后切回 ARM64（Graviton，成本更低）：
 
 1. 修改 `infra/cdk/lib/weather-warning-stack.ts` 中 task definition 的 `cpuArchitecture: "ARM64"`
-2. `./infra/sv.sh cdk deploy` 使新 task def 生效
+2. 按上方命令执行 `./infra/sv.sh cdk deploy`，使新 task def 生效
 3. `./infra/sv.sh deploy web` —— `build-image.sh` 的 `auto` 模式会检测到新 task def 是 ARM64，自动回退到远端 ARM builder 构建（若从 x86_64 主机上发布）。若需显式指定，可 `BUILD_MODE=remote ./infra/sv.sh deploy web`
 
 ---

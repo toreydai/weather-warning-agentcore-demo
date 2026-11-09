@@ -17,6 +17,10 @@ log "Step 1/6  收集配置"
 
 ask DB_URL      "DATABASE_URL (postgresql://user:pass@host:5432/db)"
 askp AUTH_SECRET "AUTH_SECRET (随机字符串，至少16位)"
+ask TLS_CERT_ARN "ACM 证书 ARN（us-east-1，须覆盖公网域名）"
+ask PUBLIC_HOSTNAME "公网域名（须解析到 ALB）"
+: "${TLS_CERT_ARN:?必须提供 ACM 证书 ARN}"
+: "${PUBLIC_HOSTNAME:?必须提供公网域名}"
 echo ""
 echo "以下值在 CDK 部署完成后才能填写，现在可以先留空，之后用 ./infra/sv.sh secrets 更新。"
 ask KB_ID       "KNOWLEDGE_BASE_ID" ""
@@ -51,7 +55,9 @@ SECRET_JSON=$(jq -n \
 
 # ── 2. CDK 部署基础设施 ───────────────────────────────────────────────────────
 log "Step 2/6  CDK 部署基础设施（约 15-30 分钟）"
-"$SCRIPT_DIR/sv.sh" cdk deploy
+"$SCRIPT_DIR/sv.sh" cdk deploy \
+  --parameters "WeatherWarningFoundationStack:TlsCertificateArn=$TLS_CERT_ARN" \
+  --parameters "WeatherWarningFoundationStack:PublicHostname=$PUBLIC_HOSTNAME"
 
 # ── 3. 写入 Secrets Manager ───────────────────────────────────────────────────
 log "Step 3/6  写入 Secrets Manager"
@@ -87,12 +93,8 @@ echo ""
 echo "======================================================"
 echo "  部署完成！"
 echo ""
-ALB_DNS=$(aws elbv2 describe-load-balancers \
-  --names weather-warning-agentcore-alb \
-  --region "$REGION" \
-  --query 'LoadBalancers[0].DNSName' \
-  --output text 2>/dev/null || echo "(查询失败，请手动查看 ALB)")
-echo "  访问地址：http://$ALB_DNS"
+echo "  访问地址：https://$PUBLIC_HOSTNAME"
+echo "  请确认该域名的 DNS 记录已指向 weather-warning-agentcore-alb"
 echo "  默认账号：admin / admin123（首次登录需改密）"
 echo ""
 if [ -z "$FAST_ARN" ] || [ -z "$DEEP_ARN" ]; then

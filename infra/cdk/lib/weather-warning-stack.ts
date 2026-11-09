@@ -635,11 +635,11 @@ export class WeatherWarningStack extends cdk.Stack {
     taskStoppedRule.addTarget(new eventsTargets.SnsTopic(alertTopic))
 
     // ── outputs ────────────────────────────────────────────────────────────
-    new cdk.CfnOutput(this, "ClusterArn", { value: cluster.clusterArn, exportName: "Weather WarningClusterArn" })
-    new cdk.CfnOutput(this, "WebServiceName", { value: webService.serviceName, exportName: "Weather WarningWebServiceName" })
+    new cdk.CfnOutput(this, "ClusterArn", { value: cluster.clusterArn, exportName: "WeatherWarningClusterArn" })
+    new cdk.CfnOutput(this, "WebServiceName", { value: webService.serviceName, exportName: "WeatherWarningWebServiceName" })
     new cdk.CfnOutput(this, "WebEcrRepo", { value: webRepo.repositoryUri })
     new cdk.CfnOutput(this, "JobEcrRepo", { value: jobRepo.repositoryUri })
-    new cdk.CfnOutput(this, "AlertTopicArn", { value: alertTopic.topicArn, exportName: "Weather WarningAlertTopicArn" })
+    new cdk.CfnOutput(this, "AlertTopicArn", { value: alertTopic.topicArn, exportName: "WeatherWarningAlertTopicArn" })
     new cdk.CfnOutput(this, "CronDlqArn", { value: dlq.queueArn })
     new cdk.CfnOutput(this, "WebImageUsed", { value: webImageTag })
     new cdk.CfnOutput(this, "JobImageUsed", { value: jobImageTag })

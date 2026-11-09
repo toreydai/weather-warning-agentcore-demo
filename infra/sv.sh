@@ -51,7 +51,7 @@ Usage:
   infra/sv.sh cdk synth            Preview CloudFormation template (no AWS calls).
   infra/sv.sh cdk diff             Show what `cdk deploy` would change in AWS.
   infra/sv.sh cdk import           Adopt existing resources into CDK state (first-time setup).
-  infra/sv.sh cdk deploy [args]    Deploy IaC changes; pass --context webImageTag=xxx as needed.
+  infra/sv.sh cdk deploy [args]    Deploy IaC changes; foundation stack requires TlsCertificateArn and PublicHostname parameters.
   infra/sv.sh cdk <cmd> [args]     Forward any cdk subcommand from the infra/cdk directory.
   infra/sv.sh secrets              Interactively update a single key in Secrets Manager.
   infra/sv.sh cleanup [keep=5]     Deregister old ECS task definitions and delete old S3 build-context files.
@@ -102,7 +102,7 @@ run_db_migrations_if_requested() {
 run_smoke() {
   local base="${1:-}"
   if [ -z "$base" ]; then
-    base="http://$(alb_dns_name)"
+    base="${APP_BASE_URL:?Set APP_BASE_URL to the public HTTPS URL for smoke testing}"
   fi
   log "Running smoke test against $base"
   ( cd "$PROJECT_DIR" && npx tsx scripts/smoke-test.ts \

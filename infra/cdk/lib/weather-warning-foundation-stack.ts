@@ -69,6 +69,17 @@ export class WeatherWarningFoundationStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: cdk.StackProps) {
     super(scope, id, props)
 
+    const tlsCertificateArn = new cdk.CfnParameter(this, "TlsCertificateArn", {
+      type: "String",
+      description: "ARN of an ACM certificate in us-east-1 for the public hostname",
+      allowedPattern: "arn:aws:acm:us-east-1:[0-9]{12}:certificate/[0-9a-f-]+",
+    })
+    const publicHostname = new cdk.CfnParameter(this, "PublicHostname", {
+      type: "String",
+      description: "DNS hostname covered by the ACM certificate and pointed at this ALB",
+      allowedPattern: "[A-Za-z0-9.-]+",
+    })
+
     const vpc = retain(new ec2.CfnVPC(this, "Vpc", {
       cidrBlock: VPC_CIDR,
       enableDnsHostnames: true,
@@ -138,6 +149,10 @@ export class WeatherWarningFoundationStack extends cdk.Stack {
       groupId: ALB_SG_ID,
       ipProtocol: "tcp", fromPort: 80, toPort: 80, cidrIp: "0.0.0.0/0",
     }))
+    retain(new ec2.CfnSecurityGroupIngress(this, "AlbIngressHttps", {
+      groupId: ALB_SG_ID,
+      ipProtocol: "tcp", fromPort: 443, toPort: 443, cidrIp: "0.0.0.0/0",
+    }))
     retain(new ec2.CfnSecurityGroupEgress(this, "AlbEgressAll", {
       groupId: ALB_SG_ID,
       ipProtocol: "-1", cidrIp: "0.0.0.0/0",
@@ -200,15 +215,28 @@ export class WeatherWarningFoundationStack extends cdk.Stack {
       loadBalancerArn: ALB_ARN,
       port: 80,
       protocol: "HTTP",
-      defaultActions: [{ type: "forward", targetGroupArn: WEB_TARGET_GROUP_ARN }],
+      defaultActions: [{ type: "redirect", redirectConfig: {
+        protocol: "HTTPS", port: "443", statusCode: "HTTP_301",
+      } }],
     }))
 
     retain(new elbv2.CfnListenerRule(this, "FargateCanaryRule", {
       listenerArn: LISTENER_ARN,
       priority: 90,
-      actions: [{ type: "forward", targetGroupArn: WEB_TARGET_GROUP_ARN }],
+      actions: [{ type: "redirect", redirectConfig: {
+        protocol: "HTTPS", port: "443", statusCode: "HTTP_301",
+      } }],
       conditions: [{ field: "path-pattern", values: ["/__fargate/*"] }],
     }))
+
+    retain(new elbv2.CfnListener(this, "HttpsListener", {
+      loadBalancerArn: ALB_ARN,
+      port: 443,
+      protocol: "HTTPS",
+      certificates: [{ certificateArn: tlsCertificateArn.valueAsString }],
+      defaultActions: [{ type: "forward", targetGroupArn: WEB_TARGET_GROUP_ARN }],
+    }))
+    new cdk.CfnOutput(this, "HttpsUrl", { value: cdk.Fn.join("", ["https://", publicHostname.valueAsString]) })
 
     for (const repoName of [WEB_ECR_REPO, JOB_ECR_REPO]) {
       retain(new ecr.CfnRepository(this, `Ecr${repoName === WEB_ECR_REPO ? "Web" : "Job"}Repository`, {
@@ -507,11 +535,11 @@ export class WeatherWarningFoundationStack extends cdk.Stack {
       ],
     }))
 
-    new cdk.CfnOutput(this, "VpcId", { value: VPC_ID, exportName: "Weather WarningFoundationVpcId" })
-    new cdk.CfnOutput(this, "AlbArn", { value: ALB_ARN, exportName: "Weather WarningFoundationAlbArn" })
-    new cdk.CfnOutput(this, "AppSecretName", { value: SECRET_NAME, exportName: "Weather WarningFoundationAppSecretName" })
-    new cdk.CfnOutput(this, "KnowledgeBaseId", { value: KB_ID, exportName: "Weather WarningFoundationKnowledgeBaseId" })
-    new cdk.CfnOutput(this, "KnowledgeBaseDataSourceId", { value: KB_DATA_SOURCE_ID, exportName: "Weather WarningFoundationKnowledgeBaseDataSourceId" })
+    new cdk.CfnOutput(this, "VpcId", { value: VPC_ID, exportName: "WeatherWarningFoundationVpcId" })
+    new cdk.CfnOutput(this, "AlbArn", { value: ALB_ARN, exportName: "WeatherWarningFoundationAlbArn" })
+    new cdk.CfnOutput(this, "AppSecretName", { value: SECRET_NAME, exportName: "WeatherWarningFoundationAppSecretName" })
+    new cdk.CfnOutput(this, "KnowledgeBaseId", { value: KB_ID, exportName: "WeatherWarningFoundationKnowledgeBaseId" })
+    new cdk.CfnOutput(this, "KnowledgeBaseDataSourceId", { value: KB_DATA_SOURCE_ID, exportName: "WeatherWarningFoundationKnowledgeBaseDataSourceId" })
     new cdk.CfnOutput(this, "CanaryRuleArn", { value: CANARY_RULE_ARN })
     new cdk.CfnOutput(this, "PrivateRouteTableId", { value: PRIVATE_ROUTE_TABLE_ID })
     new cdk.CfnOutput(this, "NatGatewayId", { value: NAT_GATEWAY_ID })
