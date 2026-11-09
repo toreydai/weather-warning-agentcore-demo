@@ -1,6 +1,14 @@
 import { Pool } from "pg"
-import { hash } from "bcryptjs"
+import { compare, hash } from "bcryptjs"
 
+function requireInitialAdminPassword(): string {
+  const value = process.env.INITIAL_ADMIN_PASSWORD
+  if (!value || value.length < 16) {
+    throw new Error("INITIAL_ADMIN_PASSWORD must be set to at least 16 characters")
+  }
+  return value
+}
+const initialAdminPassword = requireInitialAdminPassword()
 const pool = new Pool({ connectionString: process.env.DATABASE_URL!, ssl: { rejectUnauthorized: false } })
 
 async function main() {
@@ -197,14 +205,26 @@ async function main() {
       WHERE NOT EXISTS (SELECT 1 FROM field);
     `)
 
-    // Seed admin user
-    const adminHash = await hash("admin123", 10)
+    // Seed a unique admin password, or rotate the historical demo password.
+    const adminHash = await hash(initialAdminPassword, 10)
     const expires = new Date(); expires.setDate(expires.getDate() + 90)
-    await client.query(`
-      INSERT INTO "user" (username, password_hash, role, must_change_password, password_expires_at) VALUES
-        ('admin', $1, 'admin', false, $2)
-      ON CONFLICT (username) DO NOTHING;
-    `, [adminHash, expires])
+    const existingAdmin = await client.query<{ password_hash: string }>(
+      `SELECT password_hash FROM "user" WHERE username = 'admin'`
+    )
+    if (!existingAdmin.rows.length) {
+      await client.query(`
+        INSERT INTO "user" (username, password_hash, role, must_change_password, password_expires_at) VALUES
+          ('admin', $1, 'admin', true, $2)
+        ON CONFLICT (username) DO NOTHING;
+      `, [adminHash, expires])
+    } else if (await compare("admin123", existingAdmin.rows[0].password_hash)) {
+      await client.query(`
+        UPDATE "user" SET password_hash = $1, must_change_password = true,
+          password_expires_at = $2, failed_login_count = 0,
+          locked_until = NULL WHERE username = 'admin'
+      `, [adminHash, expires])
+      console.log("Rotated historical demo admin password")
+    }
 
     // Seed alert thresholds
     await client.query(`

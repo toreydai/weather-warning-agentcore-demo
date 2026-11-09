@@ -25,7 +25,7 @@ npm install
 ```
 
 脚本会依次执行：
-1. 交互式收集配置（DB 地址、密钥、ACM 证书 ARN、公网域名等）
+1. 交互式收集配置（DB 地址、初始管理员密码、密钥、ACM 证书 ARN、公网域名等）
 2. CDK 部署基础设施（VPC、RDS、ECS、ALB、Bedrock KB 等，约 15-30 分钟）
 3. 写入 Secrets Manager
 4. 初始化数据库（建表 + 种子数据）
@@ -33,6 +33,8 @@ npm install
 6. 构建并部署 Web + Job 镜像
 
 完成后终端会打印访问地址和默认账号。
+
+初始化脚本要求 `INITIAL_ADMIN_PASSWORD` 至少 16 字符，不再使用固定演示密码。对已经运行过旧版本初始化脚本的数据库，备份后以 `DATABASE_URL=... INITIAL_ADMIN_PASSWORD=... npm run db:init` 重新初始化；脚本会在检测到旧演示密码时轮换它，已由管理员自行更改过的密码不会被覆盖。
 
 > **AgentCore Runtime（病虫害功能）** 需要单独部署：
 > ```bash

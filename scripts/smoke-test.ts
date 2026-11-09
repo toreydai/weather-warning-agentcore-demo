@@ -18,7 +18,7 @@ function parseArgs(): Args {
 
   const base = get("base", process.env.SMOKE_BASE_URL)
   const username = get("username", process.env.SMOKE_USERNAME ?? "admin")
-  const password = get("password", process.env.SMOKE_PASSWORD ?? "admin123")
+  const password = get("password", process.env.SMOKE_PASSWORD)
   if (!base) throw new Error("Missing --base or SMOKE_BASE_URL")
   if (!username || !password) throw new Error("Missing smoke username/password")
   return { base: base.replace(/\/$/, ""), username, password }

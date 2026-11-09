@@ -4,9 +4,9 @@
  */
 import { getStageInfo } from "@/lib/services/advice"
 
-const BASE = process.env.SMOKE_BASE_URL ?? "http://weather-warning-agentcore-alb-54329175.us-east-1.elb.amazonaws.com"
+const BASE = process.env.SMOKE_BASE_URL ?? ""
 const USERNAME = process.env.SMOKE_USERNAME ?? "admin"
-const PASSWORD = process.env.SMOKE_PASSWORD ?? "admin123"
+const PASSWORD = process.env.SMOKE_PASSWORD ?? ""
 
 let cookies = ""
 let testFieldId: number | null = null
@@ -211,6 +211,9 @@ async function runApiTests(fieldId: number) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
+  if (!BASE.startsWith("https://") || !PASSWORD) {
+    throw new Error("Set an HTTPS SMOKE_BASE_URL and SMOKE_PASSWORD before running this script")
+  }
   console.log(`Step 4 采收日期管理 — 端对端测试\nBase: ${BASE}\n`)
 
   // 单元测试（本地，无需网络）

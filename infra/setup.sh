@@ -17,6 +17,8 @@ log "Step 1/6  收集配置"
 
 ask DB_URL      "DATABASE_URL (postgresql://user:pass@host:5432/db)"
 askp AUTH_SECRET "AUTH_SECRET (随机字符串，至少16位)"
+askp ADMIN_PASSWORD "初始 admin 密码（至少16位，仅用于首次登录）"
+[ "${#ADMIN_PASSWORD}" -ge 16 ] || { echo "初始 admin 密码至少需要16位" >&2; exit 1; }
 ask TLS_CERT_ARN "ACM 证书 ARN（us-east-1，须覆盖公网域名）"
 ask PUBLIC_HOSTNAME "公网域名（须解析到 ALB）"
 : "${TLS_CERT_ARN:?必须提供 ACM 证书 ARN}"
@@ -69,7 +71,7 @@ echo "Secret 已写入：$SECRET_NAME"
 
 # ── 4. 初始化数据库 ───────────────────────────────────────────────────────────
 log "Step 4/6  初始化数据库"
-( cd "$PROJECT_DIR" && DATABASE_URL="$DB_URL" npm run db:migrate && DATABASE_URL="$DB_URL" npm run db:init )
+( cd "$PROJECT_DIR" && DATABASE_URL="$DB_URL" npm run db:migrate && DATABASE_URL="$DB_URL" INITIAL_ADMIN_PASSWORD="$ADMIN_PASSWORD" npm run db:init )
 
 # ── 5. 上传知识库文档 ─────────────────────────────────────────────────────────
 if [ -n "$KB_BUCKET" ] && [ -n "$KB_ID" ] && [ -n "$KB_DS_ID" ]; then
@@ -95,7 +97,7 @@ echo "  部署完成！"
 echo ""
 echo "  访问地址：https://$PUBLIC_HOSTNAME"
 echo "  请确认该域名的 DNS 记录已指向 weather-warning-agentcore-alb"
-echo "  默认账号：admin / admin123（首次登录需改密）"
+echo "  初始账号：admin（使用刚才输入的初始密码，首次登录需更改）"
 echo ""
 if [ -z "$FAST_ARN" ] || [ -z "$DEEP_ARN" ]; then
   echo "  ⚠️  AgentCore Runtime ARN 未填写，病虫害功能暂不可用。"

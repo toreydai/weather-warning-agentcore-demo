@@ -20,7 +20,7 @@ function parseArgs(): Args {
 
   const base = get("base", process.env.MANUAL_BASE_URL ?? process.env.SMOKE_BASE_URL)
   const username = get("username", process.env.MANUAL_USERNAME ?? process.env.SMOKE_USERNAME ?? "admin")
-  const password = get("password", process.env.MANUAL_PASSWORD ?? process.env.SMOKE_PASSWORD ?? "admin123")
+  const password = get("password", process.env.MANUAL_PASSWORD ?? process.env.SMOKE_PASSWORD)
   if (!base) throw new Error("Missing --base or MANUAL_BASE_URL")
   if (!username || !password) throw new Error("Missing manual acceptance username/password")
   return {
