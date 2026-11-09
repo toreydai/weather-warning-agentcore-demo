@@ -7,6 +7,7 @@ import { Pencil, Check, X } from "lucide-react"
 
 interface Props {
   fieldId: number
+  canEdit: boolean
   harvestDate: string | null
   harvestType: string | null
   notes: string | null
@@ -14,7 +15,7 @@ interface Props {
 
 const TYPE_LABEL: Record<string, string> = { normal: "正常", early: "早收", late: "晚收" }
 
-export function HarvestCard({ fieldId, harvestDate, harvestType, notes }: Props) {
+export function HarvestCard({ fieldId, canEdit, harvestDate, harvestType, notes }: Props) {
   const [editing, setEditing] = useState(false)
   const [date, setDate] = useState(harvestDate ?? "")
   const [type, setType] = useState(harvestType ?? "normal")
@@ -42,7 +43,7 @@ export function HarvestCard({ fieldId, harvestDate, harvestType, notes }: Props)
     <Card>
       <CardHeader className="pb-2 flex flex-row items-center justify-between">
         <CardTitle className="text-sm font-medium">采收信息</CardTitle>
-        {!editing && (
+        {canEdit && !editing && (
           <button onClick={() => setEditing(true)} className="rounded p-1 hover:bg-muted" title="编辑">
             <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
           </button>

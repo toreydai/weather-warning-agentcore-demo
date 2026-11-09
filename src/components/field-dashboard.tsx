@@ -56,6 +56,7 @@ function filterByMonth<T>(items: T[], getDate: (item: T) => string, month: Month
 
 export function FieldDashboard({
   fieldId,
+  canEditAdvice,
   weeklyReports,
   alerts,
   dailyData,
@@ -71,6 +72,7 @@ export function FieldDashboard({
   tempThresholds,
 }: {
   fieldId: number
+  canEditAdvice: boolean
   weeklyReports: WeeklyReport[]
   alerts: ExtremeWeatherAlert[]
   dailyData: ChartDay[]
@@ -351,7 +353,7 @@ export function FieldDashboard({
         <TabsContent value="weekly" className="space-y-4">
           {filteredReports.length === 0 ? (
             <Card><CardContent className="py-10 text-center text-muted-foreground">暂无数据</CardContent></Card>
-          ) : filteredReports.map((r, i) => <WeeklyReportCard key={r.weekStart} report={r} fieldId={fieldId} isNextWeek={i === 1} />)}
+          ) : filteredReports.map((r, i) => <WeeklyReportCard key={r.weekStart} report={r} fieldId={fieldId} canEditAdvice={canEditAdvice} isNextWeek={i === 1} />)}
         </TabsContent>
         <TabsContent value="alerts" className="space-y-3">
           {filteredAlerts.length === 0 ? (

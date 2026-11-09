@@ -9,10 +9,15 @@ import { rateLimit, rateLimitResponse, getClientIp } from "@/lib/rate-limit"
 
 export async function POST(req: NextRequest) {
   const { username, password } = await req.json()
-  if (!username || !password) return NextResponse.json({ error: "username and password required" }, { status: 400 })
+  if (typeof username !== "string" || !username || username.length > 64 ||
+      typeof password !== "string" || !password || password.length > 1024) {
+    return NextResponse.json({ error: "invalid username or password" }, { status: 400 })
+  }
 
-  const rl = await rateLimit(`login:${getClientIp(req)}:${username}`, 10, 60_000)
-  if (!rl.ok) return rateLimitResponse(rl.retryAfter)
+  const accountLimit = await rateLimit(`login:account:${username.toLowerCase()}`, 20, 15 * 60_000)
+  if (!accountLimit.ok) return rateLimitResponse(accountLimit.retryAfter)
+  const ipLimit = await rateLimit(`login:ip:${getClientIp(req)}`, 30, 60_000)
+  if (!ipLimit.ok) return rateLimitResponse(ipLimit.retryAfter)
 
   const rows = await getDb().select().from(user).where(eq(user.username, username))
   const u = rows[0]

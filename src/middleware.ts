@@ -52,7 +52,7 @@ export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname
 
   // Enforce cookie auth on /api/* (except public-API allowlist).
-  // Page routes are not gated here — they call auth() in their server components / use apiFetch which redirects on 401.
+  // All API routes except the explicit public set require a valid session.
   if (pathname.startsWith("/api/") && !isPublicApiPath(pathname)) {
     const token = req.cookies.get(AUTH_COOKIE)?.value
     const payload = token ? await verifyTokenPayload(token) : null
@@ -68,19 +68,22 @@ export async function middleware(req: NextRequest) {
         { status: 403, headers: { "x-request-id": requestId } }
       )
     }
-  } else if (!pathname.startsWith("/api/")) {
-    // Page route: only handle the mustChangePassword redirect (auth itself is done in server components).
-    if (pathname !== "/change-password") {
-      const token = req.cookies.get(AUTH_COOKIE)?.value
-      const payload = token ? await verifyTokenPayload(token) : null
-      if (payload?.mustChangePassword === true) {
-        const url = req.nextUrl.clone()
-        url.pathname = "/change-password"
-        url.search = ""
-        const redirect = NextResponse.redirect(url)
-        redirect.headers.set("x-request-id", requestId)
-        return redirect
-      }
+  } else if (!pathname.startsWith("/api/") && pathname !== "/login") {
+    const token = req.cookies.get(AUTH_COOKIE)?.value
+    const payload = token ? await verifyTokenPayload(token) : null
+    if (!payload || typeof payload.sub !== "string") {
+      const url = req.nextUrl.clone()
+      url.pathname = "/login"
+      url.search = ""
+      return NextResponse.redirect(url)
+    }
+    if (payload.mustChangePassword === true && pathname !== "/change-password") {
+      const url = req.nextUrl.clone()
+      url.pathname = "/change-password"
+      url.search = ""
+      const redirect = NextResponse.redirect(url)
+      redirect.headers.set("x-request-id", requestId)
+      return redirect
     }
   }
 

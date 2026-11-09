@@ -19,7 +19,7 @@ function flattenValue(v: string): string {
   return v
 }
 
-export function AdviceEditor({ fieldId, weekStart, advice, onUpdate }: { fieldId: number; weekStart: string; advice: Advice; onUpdate?: (a: any) => void }) {
+export function AdviceEditor({ fieldId, weekStart, advice, onUpdate, canEdit }: { fieldId: number; weekStart: string; advice: Advice; onUpdate?: (a: any) => void; canEdit: boolean }) {
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState({
     summary: flattenValue(advice.summary), fertilizer: flattenValue(advice.fertilizer),
@@ -56,7 +56,7 @@ export function AdviceEditor({ fieldId, weekStart, advice, onUpdate }: { fieldId
 
   const reviewLabel = current.reviewed_by ? (
     <Badge className="bg-green-500 text-white text-xs gap-1"><CheckCircle className="h-3 w-3" />已审核 by {current.reviewed_by}</Badge>
-  ) : current.id && (current.source === "auto" || current.source === "agentcore") ? (
+  ) : canEdit && current.id && (current.source === "auto" || current.source === "agentcore") ? (
     <button onClick={handleReview} className="text-xs text-green-600 hover:underline">审核通过</button>
   ) : null
 
@@ -113,13 +113,13 @@ export function AdviceEditor({ fieldId, weekStart, advice, onUpdate }: { fieldId
   return (
     <div className="flex items-center gap-2 flex-wrap" onClick={e => e.stopPropagation()}>
       {sourceLabel} {reviewLabel}
-      {current.id && <button onClick={() => setEditing(true)} className="text-xs text-blue-600 hover:underline">编辑</button>}
+      {canEdit && current.id && <button onClick={() => setEditing(true)} className="text-xs text-blue-600 hover:underline">编辑</button>}
       <button onClick={handleGenerate} disabled={loading} className="text-xs text-green-600 hover:underline disabled:opacity-50">
         {loading ? "生成中..." : "⚙️ 规则生成"}
       </button>
-      <button onClick={handleAIGenerate} disabled={loading} className="text-xs text-purple-600 hover:underline disabled:opacity-50">
+      {canEdit && <button onClick={handleAIGenerate} disabled={loading} className="text-xs text-purple-600 hover:underline disabled:opacity-50">
         {loading ? "AI分析中..." : "🤖 AI智能生成"}
-      </button>
+      </button>}
     </div>
   )
 }

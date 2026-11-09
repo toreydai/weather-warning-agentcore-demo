@@ -1,21 +1,26 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getDb } from "@/lib/db"
 import { farmingAdviceRecord } from "@/lib/db/schema"
-import { eq } from "drizzle-orm"
-import { verifyAuth } from "@/lib/auth"
+import { and, eq } from "drizzle-orm"
+import { requireAgronomist } from "@/lib/auth"
 import { withHandler } from "@/lib/with-handler"
 
-export async function PUT(req: NextRequest, { params }: { params: Promise<{ adviceId: string }> }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string; adviceId: string }> }) {
   return withHandler(req.nextUrl.pathname, async () => {
-    const session = await verifyAuth(req)
-    if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 })
-    const { adviceId } = await params
+    const session = await requireAgronomist()
+    if (session instanceof NextResponse) return session
+    const { id, adviceId } = await params
+    const fieldId = Number(id)
+    const recordId = Number(adviceId)
+    if (!Number.isSafeInteger(fieldId) || fieldId <= 0 || !Number.isSafeInteger(recordId) || recordId <= 0) {
+      return NextResponse.json({ error: "invalid id" }, { status: 400 })
+    }
     const body = await req.json()
     const rows = await getDb().update(farmingAdviceRecord).set({
       summary: body.summary, fertilizer: body.fertilizer, pesticide: body.pesticide,
       irrigation: body.irrigation, field_work: body.field_work,
       source: "manual", updated_at: new Date(),
-    }).where(eq(farmingAdviceRecord.id, parseInt(adviceId))).returning()
+    }).where(and(eq(farmingAdviceRecord.id, recordId), eq(farmingAdviceRecord.field_id, fieldId))).returning()
     if (!rows[0]) return NextResponse.json({ error: "Not found" }, { status: 404 })
     return NextResponse.json(rows[0])
   })

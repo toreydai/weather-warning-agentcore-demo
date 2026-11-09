@@ -14,7 +14,7 @@ import { getWeatherIcon, getWeatherDescription } from "@/lib/weather-types"
 import type { FarmingAdvice } from "@/lib/services/advice"
 import { AdviceEditor } from "@/components/advice-editor"
 
-export function WeeklyReportCard({ report, fieldId, isNextWeek }: { report: WeeklyReport; fieldId?: number; isNextWeek?: boolean }) {
+export function WeeklyReportCard({ report, fieldId, canEditAdvice, isNextWeek }: { report: WeeklyReport; fieldId?: number; canEditAdvice: boolean; isNextWeek?: boolean }) {
   const [expanded, setExpanded] = useState(false)
   const [advice, setAdvice] = useState<FarmingAdvice & { id?: number; source?: string; reviewed_by?: string }>(report.farmingAdvice as FarmingAdvice & { id?: number; source?: string; reviewed_by?: string })
 
@@ -34,7 +34,7 @@ export function WeeklyReportCard({ report, fieldId, isNextWeek }: { report: Week
             <CardDescription className="flex items-center gap-1">
               <Sprout className="h-4 w-4" />{advice.potatoGrowthStage}
             </CardDescription>
-            {fieldId && <AdviceEditor fieldId={fieldId} weekStart={report.weekStart} advice={advice} onUpdate={setAdvice} />}
+            {fieldId && <AdviceEditor fieldId={fieldId} weekStart={report.weekStart} advice={advice} onUpdate={setAdvice} canEdit={canEditAdvice} />}
           </div>
           <div className="flex items-center gap-3">
             <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">

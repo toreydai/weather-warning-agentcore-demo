@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getFieldById, updateField, deleteField } from "@/lib/services/weather"
-import { verifyAuth } from "@/lib/auth"
+import { requireReviewer } from "@/lib/auth"
 import { updateFieldSchema } from "@/lib/validators"
 import { withHandler } from "@/lib/with-handler"
 import { rateLimit, rateLimitResponse, getClientIp } from "@/lib/rate-limit"
@@ -16,8 +16,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   return withHandler(req.nextUrl.pathname, async () => {
-    const auth = await verifyAuth(req)
-    if (!auth) return NextResponse.json({ error: "unauthorized" }, { status: 401 })
+    const editor = await requireReviewer()
+    if (editor instanceof NextResponse) return editor
     const rl = await rateLimit(`fields:write:${getClientIp(req)}`, 30, 60_000)
     if (!rl.ok) return rateLimitResponse(rl.retryAfter)
     const { id } = await params
@@ -31,8 +31,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   return withHandler(req.nextUrl.pathname, async () => {
-    const auth = await verifyAuth(req)
-    if (!auth) return NextResponse.json({ error: "unauthorized" }, { status: 401 })
+    const editor = await requireReviewer()
+    if (editor instanceof NextResponse) return editor
     const rl = await rateLimit(`fields:write:${getClientIp(req)}`, 30, 60_000)
     if (!rl.ok) return rateLimitResponse(rl.retryAfter)
     const { id } = await params

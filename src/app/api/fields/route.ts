@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getAllFields, createField } from "@/lib/services/weather"
-import { verifyAuth } from "@/lib/auth"
+import { requireReviewer } from "@/lib/auth"
 import { createFieldSchema } from "@/lib/validators"
 import { resolveCountyCoordinates } from "@/lib/data/administrative-divisions"
 import { withHandler } from "@/lib/with-handler"
@@ -19,8 +19,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   return withHandler(req.nextUrl.pathname, async () => {
-    const auth = await verifyAuth(req)
-    if (!auth) return NextResponse.json({ error: "unauthorized" }, { status: 401 })
+    const editor = await requireReviewer()
+    if (editor instanceof NextResponse) return editor
     const rl = await rateLimit(`fields:write:${getClientIp(req)}`, 30, 60_000)
     if (!rl.ok) return rateLimitResponse(rl.retryAfter)
     const body = await req.json()

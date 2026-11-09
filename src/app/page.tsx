@@ -1,14 +1,19 @@
 import Link from "next/link"
+import { redirect } from "next/navigation"
 import { ChatPanel } from "@/components/chat-panel"
 import { AddFieldForm } from "@/components/add-field-form"
 import { getAllFields } from "@/lib/services/weather"
 import { getAllZones } from "@/lib/services/zone"
 import { env } from "@/lib/env"
+import { auth } from "@/lib/auth"
 
 export const dynamic = "force-dynamic"
 
 export default async function Home() {
+  const session = await auth()
+  if (!session) redirect("/login")
   const [fields, zones] = await Promise.all([getAllFields(), getAllZones()])
+  const canManageFields = session?.user.role === "admin" || session?.user.role === "reviewer"
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -73,7 +78,7 @@ export default async function Home() {
               </Link>
             )
           })}
-          <AddFieldForm />
+          {canManageFields && <AddFieldForm />}
         </div>
       </section>
 

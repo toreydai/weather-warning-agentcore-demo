@@ -28,8 +28,8 @@ http://weather-warning-agentcore-alb-54329175.us-east-1.elb.amazonaws.com
 
 | 角色 | 地块增删改 | 农事建议审核 | 每日预警审核/发布 | admin 后台 |
 |---|:---:|:---:|:---:|:---:|
-| `farmer` | ✅ | — | — | — |
-| `agronomist` | ✅ | ✅ | — | — |
+| `farmer` | — | — | — | — |
+| `agronomist` | — | ✅ | — | — |
 | `reviewer` | ✅ | ✅ | ✅ | — |
 | `admin` | ✅ | ✅ | ✅ | ✅ |
 

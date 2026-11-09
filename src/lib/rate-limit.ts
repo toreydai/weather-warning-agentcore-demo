@@ -8,8 +8,10 @@ const buckets = new Map<string, Bucket>()
 
 export function getClientIp(req: NextRequest): string {
   const xff = req.headers.get("x-forwarded-for")
-  if (xff) return xff.split(",")[0].trim()
-  return req.headers.get("x-real-ip") ?? "unknown"
+  // The ALB is configured to append the actual peer address. Earlier entries
+  // can be supplied by the client and must not be used for rate limiting.
+  if (xff) return xff.split(",").at(-1)?.trim() || "unknown"
+  return "unknown"
 }
 
 export function memoryRateLimit(

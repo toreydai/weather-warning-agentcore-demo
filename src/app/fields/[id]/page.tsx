@@ -7,7 +7,7 @@ import { computeSeasonCumulative } from "@/lib/services/cumulative"
 import { getCumulativeByYear } from "@/lib/services/cumulative-view"
 import { potatoClimateScore, plantProtectionScore, fertilizerScore, irrigationScore } from "@/lib/services/suitability"
 import { toClientWeekly, toClientAlert, toChartDay, toForecastDay, toHistOverlay } from "@/lib/weather-types"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import Link from "next/link"
 import { Sprout, MapPin, ArrowLeft, Download } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
@@ -19,10 +19,16 @@ import { env } from "@/lib/env"
 import { getPublishedDailyAlertForField } from "@/lib/services/daily-alert"
 import { parseLocalDate } from "@/lib/utils"
 import { SolarTermBanner } from "@/components/solar-term-banner"
+import { auth } from "@/lib/auth"
 
 export const dynamic = "force-dynamic"
 
 export default async function FieldDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const session = await auth()
+  if (!session) redirect("/login")
+  const role = session?.user.role
+  const canManageFields = role === "admin" || role === "reviewer"
+  const canEditAdvice = role === "admin" || role === "reviewer" || role === "agronomist"
   const { id } = await params
   const fieldId = parseInt(id)
   const field = await getFieldById(fieldId)
@@ -121,7 +127,7 @@ export default async function FieldDetailPage({ params }: { params: Promise<{ id
             </div>
             <div className="text-right text-sm text-muted-foreground">
               <div className="flex items-center justify-end gap-1.5 flex-wrap mb-1">
-                <FieldActions field={{
+                {canManageFields && <FieldActions field={{
                   id: fieldId,
                   name: field.name,
                   latitude: field.latitude,
@@ -135,7 +141,7 @@ export default async function FieldDetailPage({ params }: { params: Promise<{ id
                   township: field.township,
                   admin_code: field.admin_code,
                   address: field.address,
-                }} />
+                }} />}
                 <a href={`/api/fields/${fieldId}/export/weather`} className="flex items-center gap-1 rounded-md border px-2 py-1 text-xs hover:bg-muted">
                   <Download className="h-3 w-3" /><span className="hidden sm:inline">气象</span>CSV
                 </a>
@@ -156,12 +162,14 @@ export default async function FieldDetailPage({ params }: { params: Promise<{ id
           harvestDate={field.harvest_date}
           harvestType={field.harvest_type}
           notes={field.notes}
+          canEdit={canManageFields}
         />
         {dailyAlert && <DailyAlertCard alert={dailyAlert} />}
         <SolarTermBanner today={today} />
 
         <FieldDashboard
           fieldId={fieldId}
+          canEditAdvice={canEditAdvice}
           weeklyReports={weeklyWithAdvice.map(toClientWeekly)}
           alerts={alerts.map(toClientAlert)}
           dailyData={allDailyData.filter(d => d.date >= `${new Date().getFullYear()}-01-01`).map(toChartDay)}

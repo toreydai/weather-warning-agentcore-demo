@@ -7,6 +7,7 @@ import { generateFarmingAdvice, getStageInfo } from "@/lib/services/advice"
 import { generateAIAdvice } from "@/lib/services/ai"
 import { generateAdviceViaAgent } from "@/lib/services/agentcore"
 import { rateLimit, rateLimitResponse } from "@/lib/rate-limit"
+import { requireAgronomist } from "@/lib/auth"
 
 function harvestedResponse() {
   return NextResponse.json({ growth_stage: "已采收", summary: "该地块已完成采收，无需生成农事建议。", fertilizer: "-", pesticide: "-", irrigation: "-", field_work: "-", source: "system" })
@@ -29,6 +30,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const editor = await requireAgronomist()
+  if (editor instanceof NextResponse) return editor
   const { id } = await params
   const fieldId = parseInt(id)
   const week = new URL(req.url).searchParams.get("week")

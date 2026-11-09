@@ -208,6 +208,7 @@ export class WeatherWarningFoundationStack extends cdk.Stack {
       loadBalancerAttributes: [
         { key: "idle_timeout.timeout_seconds", value: "120" },
         { key: "routing.http2.enabled", value: "true" },
+        { key: "routing.http.xff_header_processing.mode", value: "append" },
       ],
     }))
 
